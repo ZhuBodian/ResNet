@@ -105,6 +105,7 @@ data/
 input/
 saved/
 datasets/
+pretrain_weights/
 utils/send_email.py
 
 # editor, os cache directory

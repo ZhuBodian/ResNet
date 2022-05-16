@@ -1,5 +1,7 @@
 import argparse
 import collections
+import os.path
+import torch.nn as nn
 import torch
 import numpy as np
 import data_loader.data_loaders as module_data
@@ -32,8 +34,16 @@ def main(config):
     data_loader = config.init_obj('data_loader', module_data)  # 返回一个名为data_loader的，module_data实例
     valid_data_loader = data_loader.split_validation()
 
-    # build model architecture, then print to console
-    model = module_arch.resnet34(num_classes=10)
+    # build model architecture, then print to console，并读取预训练权重
+    model = module_arch.resnet34(num_classes=1000)  # 如果直接设置为10，后面无法导入预训练权重
+    if config.config['arch']['load_pretrain_weights']:
+        path = config.config['arch']['pretrain_weights_name']
+        assert os.path.exists(path), f'file {path} not exists'
+        device, device_ids = prepare_device(config['n_gpu'])
+        model.load_state_dict(torch.load(path, map_location=device))
+        in_channel = model.fc.in_features
+        model.fc = nn.Linear(in_channel, 10)  # 10为自建数据集的类别
+
     logger.info(model)  # logging.info('输出信息')，而类model的输出信息为可训练参数
     global_var.get_value('email_log').add_log(model.__str__())
 
@@ -62,6 +72,7 @@ def main(config):
 
     trainer.train()
     global_var.get_value('email_log').send_mail()
+    os.system('shutdown')
 
 
 if __name__ == '__main__':
