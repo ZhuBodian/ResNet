@@ -33,7 +33,7 @@ def main(config):
     valid_data_loader = data_loader.split_validation()
 
     # build model architecture, then print to console
-    model = config.init_obj('arch', module_arch)
+    model = module_arch.resnet34(num_classes=10)
     logger.info(model)  # logging.info('输出信息')，而类model的输出信息为可训练参数
     global_var.get_value('email_log').add_log(model.__str__())
 
