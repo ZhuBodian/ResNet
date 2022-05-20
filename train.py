@@ -42,7 +42,7 @@ def main(config):
         device, device_ids = prepare_device(config['n_gpu'])
         model.load_state_dict(torch.load(path, map_location=device))
         in_channel = model.fc.in_features
-        model.fc = nn.Linear(in_channel, 10)  # 10为自建数据集的类别
+        model.fc = nn.Linear(in_channel, 101)  # 10为自建数据集的类别
 
     logger.info(model)  # logging.info('输出信息')，而类model的输出信息为可训练参数
     global_var.get_value('email_log').add_log(model.__str__())

@@ -9,9 +9,9 @@
         "pretrain_weights_name": "./pretrain_weights/resnet34-333f7ec4.pth"
     },
     "data_loader": {
-        "type": "TinyImageNetDataloader",
+        "type": "Caltech101DataLoader",
         "args":{
-            "data_dir": "../data/tinyImageNetNoPickle/",
+            "data_dir": "../data/",
             "batch_size": 128,
             "shuffle": true,
             "validation_split": 0.1,
