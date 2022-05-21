@@ -36,7 +36,7 @@ def main(config):
 
     # build model architecture, then print to console，并读取预训练权重
     model = module_arch.resnet34(num_classes=1000)  # 如果直接设置为10，后面无法导入预训练权重
-    if config.config['arch']['load_pretrain_weights']:
+    if config.config['arch']['pretrain_weights_name'] is not None:
         path = config.config['arch']['pretrain_weights_name']
         assert os.path.exists(path), f'file {path} not exists'
         device, device_ids = prepare_device(config['n_gpu'])

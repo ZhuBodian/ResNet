@@ -70,7 +70,7 @@ class Caltech101Dataloader(BaseDataLoader):
         self.data_dir = data_dir
 
         # 一般第一次运行是true（从图像中读取数据并保存为pickle），第二次为false（直接从pickle中读数，省去预处理时间，且不用再存）
-        run_from_image_and_save_tensor = True
+        run_from_image_and_save_tensor = False
 
         self.dataset = base_my_dataset.BaseMyDataset(path=self.data_dir, train=training, transform=trsfm, split=validation_split,
                                             nums=augment_pics, flag=run_from_image_and_save_tensor)

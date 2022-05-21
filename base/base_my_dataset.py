@@ -34,13 +34,17 @@ class BaseMyDataset(Dataset):
             self.run_from_image(train, path, split, nums, image_dir, transform)
             utils.save_as_pickle(os.path.join(path, csv_mode + '_data.pickle'), self.data)
             utils.save_as_pickle(os.path.join(path, csv_mode + '_targets.pickle'), self.targets)
-            if train:  # 测试集没有这个变量
+            if train:
                 utils.save_as_pickle(os.path.join(path, 'samples.pickle'), self.samples)
+            else:  # 测试集没有这个变量，不用保存，但是需要一个展位符号
+                self.samples = None
         else:
             self.data = utils.load_from_pickle(os.path.join(path, csv_mode + '_data.pickle'))
             self.targets = utils.load_from_pickle(os.path.join(path, csv_mode + '_targets.pickle'))
-            if train:  # 测试集没有这个变量
+            if train:
                 self.samples = utils.load_from_pickle(os.path.join(path, 'samples.pickle'))
+            else:
+                self.samples = None
 
     def run_from_image(self, train, path, split, nums, image_dir, transform):
         # 根据布尔值train，来确定是生成训练集数据（如果是训练集，那么肯定也要生成验证集），还是测试集数据
