@@ -5,18 +5,19 @@
     "arch": {
         "type": "ResNetModel",
         "args": {},
-        "pretrain_weights_name": "./pretrain_weights/resnet34-333f7ec4.pth"
+        "pretrain_weights_name": null
     },
     "data_loader": {
-        "type": "Caltech101DataLoader",
+        "type": "Caltech101Dataloader",
         "args":{
-            "data_dir": "../data/",
+            "data_dir": "../data/caltech101/my_caltech101",
             "batch_size": 128,
-            "shuffle": true,
+            "shuffle": false,
             "validation_split": 0.1,
-            "num_workers": 3,
+            "num_workers": 2,
             "assign_val_sample": true,
-            "augment_pics": 2
+            "augment_pics": 0,
+            "load_all_images_to_memories": false
         }
     },
     "optimizer": {

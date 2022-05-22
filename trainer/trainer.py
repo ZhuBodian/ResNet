@@ -4,6 +4,9 @@ from torchvision.utils import make_grid
 from base import BaseTrainer
 from utils import inf_loop, MetricTracker
 from utils import global_var
+import os
+from PIL import Image
+from utils import util
 
 class Trainer(BaseTrainer):
     """
@@ -39,7 +42,14 @@ class Trainer(BaseTrainer):
         """
         self.model.train()  # 调用的是nn.model.train()设置为训练模式
         self.train_metrics.reset()  # 运行本次epoch之前，先把跟踪日志清0重置
+        print(f'load_all_images_to_memories: {self.data_loader.dataset.load_all_images_to_memories}')
+
         for batch_idx, (data, target) in enumerate(self.data_loader):
+            myTimer = util.MyTimer(f"batch:{batch_idx}")
+
+            if not self.data_loader.dataset.load_all_images_to_memories:  #
+                data = self.get_batch_data(data, True)
+
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
@@ -62,6 +72,8 @@ class Trainer(BaseTrainer):
 
             if batch_idx == self.len_epoch:
                 break
+
+            myTimer.stop()
         log = self.train_metrics.result()
 
         if self.do_validation:
@@ -83,6 +95,9 @@ class Trainer(BaseTrainer):
         self.valid_metrics.reset()
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
+                if not self.data_loader.dataset.load_all_images_to_memories:  #
+                    data = self.get_batch_data(data, False)
+
                 data, target = data.to(self.device), target.to(self.device)
 
                 output = self.model(data)
@@ -109,3 +124,20 @@ class Trainer(BaseTrainer):
             current = batch_idx
             total = self.len_epoch
         return base.format(current, total, 100.0 * current / total)
+
+
+    def get_batch_data(self, data, train):
+        idxs = list(data.numpy())
+        batch_names_list = [self.data_loader.dataset.data_path[idx] for idx in idxs]
+        data = torch.empty((len(idxs), 3, 224, 224))
+
+        trsfm_type = 'train' if train else 'val'
+        for idx, image_name in enumerate(batch_names_list):
+            # 读出来的图像是RGBA四通道的，A通道为透明通道，该通道值对深度学习模型训练来说暂时用不到，因此使用convert(‘RGB’)进行通道转换
+            image = Image.open(image_name).convert('RGB')
+            temp = self.data_loader.dataset.transform[trsfm_type](image)  # .unsqueeze(0)增加维度（0表示，在第一个位置增加维度）
+            data[idx] = temp
+
+        return data
+
+

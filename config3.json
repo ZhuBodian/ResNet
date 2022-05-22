@@ -5,7 +5,6 @@
     "arch": {
         "type": "ResNetModel",
         "args": {},
-        "load_pretrain_weights": true,
         "pretrain_weights_name": "./pretrain_weights/resnet34-333f7ec4.pth"
     },
     "data_loader": {
@@ -17,7 +16,8 @@
             "validation_split": 0.1,
             "num_workers": 7,
             "assign_val_sample": true,
-            "augment_pics": 0
+            "augment_pics": 0,
+            "load_all_images_to_memories": false
         }
     },
     "optimizer": {

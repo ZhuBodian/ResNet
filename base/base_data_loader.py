@@ -28,7 +28,7 @@ class BaseDataLoader(DataLoader):
         self.batch_idx = 0
         self.n_samples = len(dataset)
 
-        assert (not assigned_val) or (assigned_val and samplers is not None), print('令assigned_val=False，或给定训练集、验证集samples')
+        assert (not assigned_val) or (assigned_val and samplers is not None), '令assigned_val=False，或给定训练集、验证集samples'
         # 如果事先指定好验证集的索引，就不再随机指定了
         if not self.assigned_val:
             self.sampler, self.valid_sampler = self._split_sampler(self.validation_split, self.assigned_val)

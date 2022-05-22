@@ -15,20 +15,42 @@ import utils
 from parse_config import ConfigParser
 from sklearn.metrics import confusion_matrix
 import pathlib
+from utils import global_var
+from utils import send_email
+from PIL import Image
+
+
+def get_batch_data(data, dataset):
+    idxs = list(data.numpy())
+    batch_names_list = [dataset.data_path[idx] for idx in idxs]
+    data = torch.empty((len(idxs), 3, 224, 224))
+
+    for idx, image_name in enumerate(batch_names_list):
+        # 读出来的图像是RGBA四通道的，A通道为透明通道，该通道值对深度学习模型训练来说暂时用不到，因此使用convert(‘RGB’)进行通道转换
+        image = Image.open(image_name).convert('RGB')
+        temp = dataset.transform['test'](image)  # .unsqueeze(0)增加维度（0表示，在第一个位置增加维度）
+        data[idx] = temp
+
+    return data
 
 
 def main(config):
+    global_var._init()
+    global_var.set_value('email_log', send_email.Mylog(header='pytorch_template', subject='测试log'))
+
     logger = config.get_logger('test')
     root = config['data_loader']['args']['data_dir']
 
     # setup data_loader instances
+    load_all_images_to_memories = True
     data_loader = getattr(module_data, config['data_loader']['type'])(
         config['data_loader']['args']['data_dir'],
         batch_size=512,
         shuffle=False,
         validation_split=0.0,
         training=False,
-        num_workers=2
+        num_workers=2,
+        load_all_images_to_memories=load_all_images_to_memories
     )
 
     # build model architecture
@@ -64,6 +86,8 @@ def main(config):
 
     with torch.no_grad():
         for i, (data, target) in enumerate(tqdm(data_loader)):
+            if not load_all_images_to_memories:  #
+                data = get_batch_data(data, data_loader.dataset)
             data, target = data.to(device), target.to(device)
             output = model(data)
 
@@ -90,7 +114,6 @@ def main(config):
 
     # 画出改进的混淆矩阵图
     cm = confusion_matrix(all_target, all_predict)
-    print(f'confusion matrix is: \n {cm}')
 
     row_sums = cm.sum(axis=1, keepdims=True)
     norm_cm = cm / row_sums  # 为防止类别图片数量不均衡，计算错误率
@@ -112,6 +135,8 @@ def main(config):
     plt.savefig(os.path.join(log_saved_path, "norm_confusion_matrix.png"))
     plt.show()
     plt.close()
+
+    global_var.get_value('email_log').send_mail()
 
 
 if __name__ == '__main__':
